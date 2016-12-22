@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+  <head>
+      <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+      <meta charset="utf-8">
+      <title>Show Today's Date</title>
+  </head>
+  <body>
+  	<p>Le domeniche del mese sono:</p>
+
+  	<?php
+  		for ($n = 1; $n <= 31; $n++) {
+  			$d = strtotime($n . "december");
+
+  			if (date("l", $d) == "Sunday") {
+  				echo date("d/M/Y", $d) . "<br />";
+  			}
+  		}
+  	?>
+  </body>
+</html>
