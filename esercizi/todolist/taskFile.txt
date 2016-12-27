@@ -1,6 +1,5 @@
-mangiare
-bere
-dormire
-
-
-
+HTML
+CSS
+JavaScript
+PHP
+Angular

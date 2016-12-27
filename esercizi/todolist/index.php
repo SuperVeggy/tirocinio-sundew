@@ -6,6 +6,13 @@
     file_put_contents("taskFile.txt", $rows);
   }
 
+  if (isset($_POST["newRow"])) {
+    $rowNumber = $_POST["rowModified"];
+    $rows = file("taskFile.txt");
+    array_splice($rows, $rowNumber, 1, $_POST["newRow"]);
+    file_put_contents("taskFile.txt", $rows);
+  }
+
   if (isset($_POST["taskName"])) {
     $taskFile = fopen("taskFile.txt", "a");
     fwrite($taskFile, $_POST["taskName"] . "\n");
@@ -25,12 +32,17 @@
         <?php
           $taskFile = fopen("taskFile.txt", "r");
           $n = 0;
-          while (!feof($taskFile)) {
-            echo "<li>"
-                   . fgets($taskFile)
-                     . "<form method='post'>
+          $rows = file("taskFile.txt");
+          for ($row = 0; $row < count($rows); $row++) {
+            echo "<li style='margin-bottom:10px'>"
+                   . $rows[$row]
+                     . "<form method='post' style='display:inline-block'>
                           <input type='hidden' name='rowToDelete' value='$n'>
-                          <input type='submit' name='submit' value='Cancella'>
+                          <input type='submit' name='submit' value='Cancella' style='margin-right:10px'>
+                        </form>
+                        <form method='post' action='handleRows.php' style='display:inline-block'>
+                          <input type='hidden' name='rowToModify' value='$n'>
+                          <input type='submit' name='submit' value='Modifica'>
                         </form>
                  </li>";
             $n += 1;
@@ -40,11 +52,8 @@
     </div>
     <form method="post">
       <label for="taskName">Quale task vorresti aggiungere?</label>
-      <input type="text" name="taskName" placeholder="Assegna un nome al task da aggiungere" size="50"><br>
-      <label for="taskDescription">Descrivi l'obbiettivo del task:</label>
-      <input type="text" name="taskDescription" placeholder="Assegna una descrizione al task" size="100"><br>
+      <input type="text" name="taskName" placeholder="Assegna un nome al task da aggiungere" size="50">
       <input type="submit" name="submit" value="Invia">
     </form>
-
   </body>
 </html>
