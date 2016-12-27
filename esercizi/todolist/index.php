@@ -1,4 +1,11 @@
 <?php
+  if (isset($_POST["rowToDelete"])) {
+    $rowNumber = $_POST["rowToDelete"];
+    $rows = file("taskFile.txt");
+    array_splice($rows, $rowNumber, 1);
+    file_put_contents("taskFile.txt", $rows);
+  }
+
   if (isset($_POST["taskName"])) {
     $taskFile = fopen("taskFile.txt", "a");
     fwrite($taskFile, $_POST["taskName"] . "\n");
@@ -17,8 +24,16 @@
       <ul>
         <?php
           $taskFile = fopen("taskFile.txt", "r");
+          $n = 0;
           while (!feof($taskFile)) {
-            echo "<li>" . fgets($taskFile) . "</li>";
+            echo "<li>"
+                   . fgets($taskFile)
+                     . "<form method='post'>
+                          <input type='hidden' name='rowToDelete' value='$n'>
+                          <input type='submit' name='submit' value='Cancella'>
+                        </form>
+                 </li>";
+            $n += 1;
           }
         ?>
       </ul>
