@@ -36,7 +36,7 @@
           for ($row = 0; $row < count($rows); $row++) {
             echo "<li style='margin-bottom:10px'>"
                    . $rows[$row]
-                     . "<form method='post' style='display:inline-block'>
+                     . "<form method='post' style='display:inline-block; margin-left:10px'>
                           <input type='hidden' name='rowToDelete' value='$n'>
                           <input type='submit' name='submit' value='Cancella' style='margin-right:10px'>
                         </form>
@@ -47,6 +47,7 @@
                  </li>";
             $n += 1;
           }
+          fclose("taskFile.txt");
         ?>
       </ul>
     </div>
