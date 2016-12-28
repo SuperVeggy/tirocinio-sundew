@@ -3,41 +3,87 @@
   const IMPORTDUTYRATE = 0.05;
 
   function calculateBasicTax($price) {
-    return $price * BASICTAXRATE;
+    return round($price * BASICTAXRATE, 2);
   }
 
   function calculateImportDuty($price) {
-    return $price * IMPORTDUTYRATE;
+    return round($price * IMPORTDUTYRATE, 2);
   }
 
-  class SaleTax {
-    function __construct($price, $basicTax, $importDuty) {
+  class SalesTax {
+    function __construct($price, $goodsItem, $importedItem, $name) {
       $this->price = $price;
+      $this->name = $name;
+      $this->salesTax = 0;
 
-      if ($basicTax === TRUE) {
-        $this->price += calculateBasicTax($price);
+      if ($goodsItem === FALSE) {
+        $this->salesTax += calculateBasicTax($price);
       }
 
-      if ($importDuty === TRUE) {
-        $this->price += calculateImportDuty($price);
+      if ($importedItem === TRUE) {
+        $this->salesTax += calculateImportDuty($price);
       }
 
-      $this->price = round($this->price, 2);
+      $this->price += $this->salesTax;
     }
   }
 
-  $book = new SaleTax(12.49, FALSE, FALSE);
-  $musicCD = new SaleTax(14.99, TRUE, FALSE);
-  $chocolateBar = new SaleTax(0.85, FALSE, FALSE);
-
-  function addPrices($prices) {
-    $args = func_get_args();
+  function addPrices($items) {
     $sum = 0;
-    foreach ($args as $arg) {
-      $sum += $arg->price;
+    $salesTaxes = 0;
+    foreach ($items as $item) {
+      $sum += $item->price;
+      $salesTaxes += $item->salesTax;
     }
-    echo $sum;
+
+    showPrices($items, $sum, $salesTaxes);
   }
 
-  addPrices($book, $musicCD, $chocolateBar);
+  function readInput($inputFile) {
+    $linesArray = file($inputFile);
+    $items = [];
+
+    foreach ($linesArray as $line) {
+      $wordsArray = explode(' ', $line);
+      $itemPrice = array_pop($wordsArray);
+      $importedItem = FALSE;
+      $goodsItem = FALSE;
+
+      switch ($wordsArray[1]) {
+        case 'imported':
+          $importedItem = TRUE;
+
+          if ($wordsArray[2] != 'bottle') {
+            $goodsItem = TRUE;
+          }
+          break;
+
+        case 'book':
+        case 'chocolate':
+        case 'packet':
+          $goodsItem = TRUE;
+          break;
+
+        case 'box':
+          $importedItem = TRUE;
+          $goodsItem = TRUE;
+          break;
+      }
+
+      $itemName = implode(' ', $wordsArray);
+      $items []= new SalesTax($itemPrice, $goodsItem, $importedItem, $itemName);
+    }
+
+    addPrices($items);
+  }
+
+  function showPrices($items, $sum, $salesTaxes) {
+    foreach ($items as $item) {
+      echo $item->name . " " . $item->price . "<br>";
+    }
+
+    echo "Sales Taxes: " . $salesTaxes . "<br>Total: " . $sum;
+  }
+
+  readInput('salesTax.txt');
 ?>
