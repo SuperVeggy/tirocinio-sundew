@@ -1,89 +1,90 @@
 <?php
-  const BASICTAXRATE = 0.1;
-  const IMPORTDUTYRATE = 0.05;
 
-  function calculateBasicTax($price) {
-    return round($price * BASICTAXRATE, 2);
-  }
-
-  function calculateImportDuty($price) {
-    return round($price * IMPORTDUTYRATE, 2);
-  }
-
-  class SalesTax {
-    function __construct($price, $goodsItem, $importedItem, $name) {
-      $this->price = $price;
-      $this->name = $name;
-      $this->salesTax = 0;
-
-      if ($goodsItem === FALSE) {
-        $this->salesTax += calculateBasicTax($price);
-      }
-
-      if ($importedItem === TRUE) {
-        $this->salesTax += calculateImportDuty($price);
-      }
-
-      $this->price += $this->salesTax;
+  function printReceipt($shoppingList) {
+    $itemsList = readInput($shoppingList);
+    foreach ($itemsList[0] as $item) {
+      echo $item->name . " " . $item->price . "<br>";
     }
-  }
-
-  function addPrices($items) {
-    $sum = 0;
-    $salesTaxes = 0;
-    foreach ($items as $item) {
-      $sum += $item->price;
-      $salesTaxes += $item->salesTax;
-    }
-
-    showPrices($items, $sum, $salesTaxes);
+    echo "Sales Taxes: " . $itemsList[2] . "<br>Total: " . $itemsList[1];
   }
 
   function readInput($inputFile) {
     $linesArray = file($inputFile);
-    $items = [];
+    return splitArray($linesArray);
+  }
 
+  function splitArray($linesArray) {
     foreach ($linesArray as $line) {
       $wordsArray = explode(' ', $line);
       $itemPrice = array_pop($wordsArray);
-      $importedItem = FALSE;
-      $goodsItem = FALSE;
+      $applicatedTaxes = taxesValidation($wordsArray);
+      $itemName = implode(' ', $wordsArray);
+      $itemsList []= new SalesTax($itemPrice, $applicatedTaxes, $itemName);
+    }
+    return sumItems($itemsList);
+  }
 
-      switch ($wordsArray[1]) {
-        case 'imported':
-          $importedItem = TRUE;
+  function taxesValidation($wordsArray) {
+    $importedGood = FALSE;
+    $primaryGood = FALSE;
+    switch ($wordsArray[1]) {
+      case 'imported':
+        $importedGood = TRUE;
 
-          if ($wordsArray[2] != 'bottle') {
-            $goodsItem = TRUE;
-          }
-          break;
+        if ($wordsArray[2] != 'bottle') {
+          $primaryGood = TRUE;
+        }
+        break;
+      case 'book':
+      case 'chocolate':
+      case 'packet':
+        $primaryGood = TRUE;
+        break;
+      case 'box':
+        $importedGood = TRUE;
+        $primaryGood = TRUE;
+        break;
+    }
+    return array($importedGood, $primaryGood);
+  }
 
-        case 'book':
-        case 'chocolate':
-        case 'packet':
-          $goodsItem = TRUE;
-          break;
+  class SalesTax {
+    function __construct($itemPrice, $applicatedTaxes, $itemName) {
+      $this->price = $itemPrice;
+      $this->name = $itemName;
+      $this->taxes = 0;
 
-        case 'box':
-          $importedItem = TRUE;
-          $goodsItem = TRUE;
-          break;
+      if ($applicatedTaxes[1] === FALSE) {
+        $this->taxes += calculateBasic($itemPrice);
       }
 
-      $itemName = implode(' ', $wordsArray);
-      $items []= new SalesTax($itemPrice, $goodsItem, $importedItem, $itemName);
-    }
+      if ($applicatedTaxes[0] === TRUE) {
+        $this->taxes += calculateDuty($itemPriceprice);
+      }
 
-    addPrices($items);
+      $this->price += $this->taxes;
+    }
   }
 
-  function showPrices($items, $sum, $salesTaxes) {
-    foreach ($items as $item) {
-      echo $item->name . " " . $item->price . "<br>";
-    }
+  const IMPORTDUTY = 0.05;
+  const BASICTAX = 0.1;
 
-    echo "Sales Taxes: " . $salesTaxes . "<br>Total: " . $sum;
+  function calculateBasic($price) {
+    return round($price * BASICTAX, 2);
   }
 
-  readInput('salesTax.txt');
+  function calculateDuty($price) {
+    return round($price * IMPORTDUTY, 2);
+  }
+
+  function sumItems($itemsList) {
+    $grandTotal = 0;
+    $salesTaxes = 0;
+    foreach ($itemsList as $item) {
+      $grandTotal += $item->price;
+      $salesTaxes += $item->taxes;
+    }
+    return array($itemsList, $grandTotal, $salesTaxes);
+  }
+
 ?>
